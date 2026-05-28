@@ -1,5 +1,13 @@
+```gitignore
 # ===================
-# AI / 编辑器 配置 (含 API 密钥等极度敏感信息)
+# Secrets / Environment
+# ===================
+.env
+.env.*
+!.env.example
+
+# ===================
+# AI Tools / Local AI Config
 # ===================
 .continue/
 .cursor/
@@ -8,82 +16,84 @@
 .aider.local.yml
 
 # ===================
-# 环境变量文件 (极大概率包含密钥和隐私配置)
+# Editors / IDE
 # ===================
-.env
-.env.local
-.env.*.local
-*.env
-
-# ===================
-# 各类 IDE 的项目配置
-# ===================
-.vscode/
 .idea/
+.settings/
+
+# VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Editor temp files
 *.swp
 *.swo
 *~
-.settings/
-*.sublime-project
-*.sublime-workspace
+*.suo
+*.user
 
 # ===================
-# 系统 / 操作系统垃圾文件
+# OS junk
 # ===================
-.DS_Store          # macOS
-Thumbs.db          # Windows
+.DS_Store
+Thumbs.db
 desktop.ini
 
 # ===================
-# C / C++ 编译产物和中间文件
+# Logs / temp
 # ===================
-# 可执行文件（Linux/Mac）
-*.out
+*.log
+*.tmp
+*.bak
+*.cache
+
+# ===================
+# C / C++
+# ===================
 *.o
-*.so
+*.obj
 *.a
-*.exe
+*.so
 *.dll
 *.dylib
-
-# 调试和中间文件
+*.exe
+*.out
 *.ilk
 *.pdb
 *.idb
 *.exp
 *.lib
 
-# GDB 文件
-.gdbinit
-
-# 编译缓存
-*.obj
-*.suo
-*.user
-*.ncb
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake-build-*/
+compile_commands.json
 
 # ===================
-# 包管理器 / 第三方库 (如果需要保留应在自己控制下提交)
+# Python
 # ===================
-node_modules/
-vendor/
 __pycache__/
 *.pyc
 *.pyo
 *.egg-info/
+
+venv/
+.venv/
+
 dist/
 build/
 
 # ===================
-# Docker / 容器 (可能包含构建密钥)
+# Node.js
 # ===================
-.dockerignore
-docker-compose.override.yml
+node_modules/
 
 # ===================
-# 日志和临时文件
+# Docker
 # ===================
-*.log
-*.tmp
-*.bak
-*.cache
+docker-compose.override.yml
+```
