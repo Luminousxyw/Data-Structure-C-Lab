@@ -6,7 +6,7 @@ int main() {
     InitList(&list);
 
     // ø’¡¥±Ì≤‚ ‘
-    printf("The length of List: %d\n", ListEmpty(list));
+    printf("Is Empty: %s\n", ListEmpty(list) ? "true":"false");
     printf("The length of List: %d\n\n", ListSize(list));
 
     // Œ≤≤Â∑®
@@ -17,7 +17,7 @@ int main() {
     printf("The length of List: %d\n\n", ListSize(list));
 
     // Õ∑≤Â∑®
-    InsertList(&list, 5, 0);
+    InsertList(&list, 35, 0);
     printf("List: "); TraverseList(list);
     printf("The length of List: %d\n\n", ListSize(list));
 
@@ -33,6 +33,9 @@ int main() {
     if (DeleteList(&list, &deletedVal, i)) {
         printf("Delete successful the value is %d\n", deletedVal);
     }
+    else{
+        printf("Delete failed.\n");
+    }
     printf("List: "); TraverseList(list);
     printf("\n");
 
@@ -42,8 +45,10 @@ int main() {
     getchar();
     if (DeleteList(&list, &deletedVal, 0)) {
         printf("Delete successful.\n");
-    } else {
-        printf("Finding Failed.\n");
+    } 
+    else 
+    {
+        printf("Find failed.\n");
     }
     printf("List: "); TraverseList(list);
     printf("\n");
@@ -56,7 +61,7 @@ int main() {
 
     // «Âø’
     ClearList(&list);
-    printf("The length of List: %d\n", ListEmpty(list));
+    printf("Is Empty: %s\n", ListEmpty(list) ? "true":"false");
     printf("The length of List: %d\n", ListSize(list));
 
     getchar();
