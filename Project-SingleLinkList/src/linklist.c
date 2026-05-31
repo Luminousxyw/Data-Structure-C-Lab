@@ -63,7 +63,6 @@ void TraverseList(LNode* HL) {
 }
 
 // 从单链表中查找元素
-// item既是输入（要查找的值）也是输出（返回找到的同一个值）
 bool FindList(LNode* HL, ElemType* item) {
     LNode* p = HL;
     while (p != NULL) {
@@ -77,7 +76,7 @@ bool FindList(LNode* HL, ElemType* item) {
 }
 
 // 更新单链表中的给定元素
-// 将链表第一个结点的值更新为 item（若链表非空）
+// ？将链表第一个结点的值更新为 item
 bool UpdateList(LNode* HL, ElemType item) {
     if (HL == NULL) {
         return false;
