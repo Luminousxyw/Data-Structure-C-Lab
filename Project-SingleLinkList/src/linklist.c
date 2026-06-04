@@ -2,12 +2,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// Initialize singly linked list
+// 初始化单链表
 void InitList(LNode** HL) {
     *HL = NULL;
 }
 
-// Clear singly linked list
+// 清空单链表
 void ClearList(LNode** HL) {
     LNode* p;
     while (*HL != NULL) {
@@ -17,7 +17,7 @@ void ClearList(LNode** HL) {
     }
 }
 
-// Get the length of singly linked list
+// 求单链表长度
 int ListSize(LNode* HL) {
     int count = 0;
     LNode* p = HL;
@@ -28,12 +28,12 @@ int ListSize(LNode* HL) {
     return count;
 }
 
-// Check if singly linked list is empty
+// 检查单链表是否为空
 bool ListEmpty(LNode* HL) {
     return (HL == NULL);
 }
 
-// Return the value of the node at specified position
+// 返回单链表中指定序号的结点值
 ElemType GetElem(LNode* HL, int pos) {
     if (pos < 1) {
         printf("Invalid position!\n");
@@ -52,7 +52,7 @@ ElemType GetElem(LNode* HL, int pos) {
     return p->data;
 }
 
-// Traverse singly linked list
+// 遍历单链表
 void TraverseList(LNode* HL) {
     LNode* p = HL;
     while (p != NULL) {
@@ -62,12 +62,12 @@ void TraverseList(LNode* HL) {
     printf("\n");
 }
 
-// Search for an element in singly linked list
+// 从单链表中查找元素
 bool FindList(LNode* HL, ElemType* item) {
     LNode* p = HL;
     while (p != NULL) {
         if (p->data == *item) {
-            *item = p->data;   // return the found value
+            *item = p->data;   // 返回找到的值
             return true;
         }
         p = p->next;
@@ -75,7 +75,8 @@ bool FindList(LNode* HL, ElemType* item) {
     return false;
 }
 
-// Update the first node's value to item
+// 更新单链表中的给定元素
+// 将链表第一个结点的值更新为 item
 bool UpdateList(LNode* HL, ElemType item) {
     if (HL == NULL) {
         return false;
@@ -84,7 +85,7 @@ bool UpdateList(LNode* HL, ElemType item) {
     return true;
 }
 
-// Insert an element into singly linked list
+// 向单链表插入元素
 void InsertList(LNode** HL, ElemType item, int mark) {
     LNode* newNode = (LNode*)malloc(sizeof(LNode));
     if (newNode == NULL) {
@@ -95,12 +96,12 @@ void InsertList(LNode** HL, ElemType item, int mark) {
     newNode->next = NULL;
 
     if (mark == 0) {
-        // Head insertion
+        // 头插法
         newNode->next = *HL;
         *HL = newNode;
     }
     else if (mark == 1) {
-        // Tail insertion
+        // 尾插法
         if (*HL == NULL) {
             *HL = newNode;
         } else {
@@ -112,7 +113,7 @@ void InsertList(LNode** HL, ElemType item, int mark) {
         }
     }
     else if (mark > 1) {
-        // Insert at specified position
+        // 指定位置插入
         if (*HL == NULL) {
             printf("List is empty, cannot insert at specified position!\n");
             free(newNode);
@@ -138,12 +139,12 @@ void InsertList(LNode** HL, ElemType item, int mark) {
     }
 }
 
-// Delete an element from singly linked list
+// 从单链表中删除元素
 bool DeleteList(LNode** HL, ElemType* item, int mark) {
     if (*HL == NULL) return false;
 
     if (mark == 0) {
-        // Delete by value
+        // 按值删除
         LNode *p = *HL, *prev = NULL;
         while (p != NULL) {
             if (p->data == *item) {
@@ -152,7 +153,7 @@ bool DeleteList(LNode** HL, ElemType* item, int mark) {
                 } else {
                     prev->next = p->next;
                 }
-                *item = p->data;  // return the deleted value
+                *item = p->data;  // 返回被删除的值
                 free(p);
                 return true;
             }
@@ -162,7 +163,7 @@ bool DeleteList(LNode** HL, ElemType* item, int mark) {
         return false;
     }
     else if (mark > 0) {
-        // Delete by position
+        // 按位置删除
         if (mark == 1) {
             LNode* p = *HL;
             *item = p->data;
@@ -187,7 +188,7 @@ bool DeleteList(LNode** HL, ElemType* item, int mark) {
     return false;
 }
 
-// Ordered output of singly linked list
+// 对单链表进行有序输出
 void OrderOutputList(LNode* HL, int mark) {
     if (HL == NULL) {
         printf("\n");
@@ -204,7 +205,7 @@ void OrderOutputList(LNode* HL, int mark) {
         arr[i] = p->data;
         p = p->next;
     }
-    // Bubble sort
+    // 冒泡排序
     for (int i = 0; i < n - 1; i++) {
         for (int j = 0; j < n - 1 - i; j++) {
             if (mark == 0) {

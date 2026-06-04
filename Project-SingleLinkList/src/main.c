@@ -30,7 +30,7 @@ int main() {
     InsertList(&list, insVal, insPos);
     printf("List: "); TraverseList(list);
     printf("The length of List: %d\n\n", ListSize(list));
-    
+
     // 按位置删除
     int deletedVal,i;
     printf("Enter the mark: ");
