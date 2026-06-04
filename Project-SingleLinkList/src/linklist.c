@@ -2,12 +2,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// 初始化单链表
+// Initialize singly linked list
 void InitList(LNode** HL) {
     *HL = NULL;
 }
 
-// 清空单链表
+// Clear singly linked list
 void ClearList(LNode** HL) {
     LNode* p;
     while (*HL != NULL) {
@@ -17,7 +17,7 @@ void ClearList(LNode** HL) {
     }
 }
 
-// 求单链表长度
+// Get the length of singly linked list
 int ListSize(LNode* HL) {
     int count = 0;
     LNode* p = HL;
@@ -28,15 +28,15 @@ int ListSize(LNode* HL) {
     return count;
 }
 
-// 检查单链表是否为空
+// Check if singly linked list is empty
 bool ListEmpty(LNode* HL) {
     return (HL == NULL);
 }
 
-// 返回单链表中指定序号的结点值
+// Return the value of the node at specified position
 ElemType GetElem(LNode* HL, int pos) {
     if (pos < 1) {
-        printf("位置无效!\n");
+        printf("Invalid position!\n");
         exit(1);
     }
     LNode* p = HL;
@@ -46,13 +46,13 @@ ElemType GetElem(LNode* HL, int pos) {
         i++;
     }
     if (p == NULL) {
-        printf("位置越界!\n");
+        printf("Position out of bounds!\n");
         exit(1);
     }
     return p->data;
 }
 
-// 遍历单链表
+// Traverse singly linked list
 void TraverseList(LNode* HL) {
     LNode* p = HL;
     while (p != NULL) {
@@ -62,12 +62,12 @@ void TraverseList(LNode* HL) {
     printf("\n");
 }
 
-// 从单链表中查找元素
+// Search for an element in singly linked list
 bool FindList(LNode* HL, ElemType* item) {
     LNode* p = HL;
     while (p != NULL) {
         if (p->data == *item) {
-            *item = p->data;   // 返回找到的值
+            *item = p->data;   // return the found value
             return true;
         }
         p = p->next;
@@ -75,8 +75,7 @@ bool FindList(LNode* HL, ElemType* item) {
     return false;
 }
 
-// 更新单链表中的给定元素
-// ？将链表第一个结点的值更新为 item
+// Update the first node's value to item
 bool UpdateList(LNode* HL, ElemType item) {
     if (HL == NULL) {
         return false;
@@ -85,23 +84,23 @@ bool UpdateList(LNode* HL, ElemType item) {
     return true;
 }
 
-// 向单链表插入元素
+// Insert an element into singly linked list
 void InsertList(LNode** HL, ElemType item, int mark) {
     LNode* newNode = (LNode*)malloc(sizeof(LNode));
     if (newNode == NULL) {
-        printf("内存分配失败!\n");
+        printf("Memory allocation failed!\n");
         exit(1);
     }
     newNode->data = item;
     newNode->next = NULL;
 
     if (mark == 0) {
-        // 头插法
+        // Head insertion
         newNode->next = *HL;
         *HL = newNode;
     }
     else if (mark == 1) {
-        // 尾插法
+        // Tail insertion
         if (*HL == NULL) {
             *HL = newNode;
         } else {
@@ -113,9 +112,9 @@ void InsertList(LNode** HL, ElemType item, int mark) {
         }
     }
     else if (mark > 1) {
-        // 指定位置插入
+        // Insert at specified position
         if (*HL == NULL) {
-            printf("链表为空，无法插入到指定位置!\n");
+            printf("List is empty, cannot insert at specified position!\n");
             free(newNode);
             return;
         }
@@ -126,7 +125,7 @@ void InsertList(LNode** HL, ElemType item, int mark) {
             i++;
         }
         if (p == NULL) {
-            printf("插入位置越界!\n");
+            printf("Insert position out of bounds!\n");
             free(newNode);
             return;
         }
@@ -134,17 +133,17 @@ void InsertList(LNode** HL, ElemType item, int mark) {
         p->next = newNode;
     }
     else {
-        printf("无效的mark参数!\n");
+        printf("Invalid mark parameter!\n");
         free(newNode);
     }
 }
 
-// 从单链表中删除元素
+// Delete an element from singly linked list
 bool DeleteList(LNode** HL, ElemType* item, int mark) {
     if (*HL == NULL) return false;
 
     if (mark == 0) {
-        // 按值删除
+        // Delete by value
         LNode *p = *HL, *prev = NULL;
         while (p != NULL) {
             if (p->data == *item) {
@@ -153,7 +152,7 @@ bool DeleteList(LNode** HL, ElemType* item, int mark) {
                 } else {
                     prev->next = p->next;
                 }
-                *item = p->data;  // 返回被删除的值
+                *item = p->data;  // return the deleted value
                 free(p);
                 return true;
             }
@@ -163,7 +162,7 @@ bool DeleteList(LNode** HL, ElemType* item, int mark) {
         return false;
     }
     else if (mark > 0) {
-        // 按位置删除
+        // Delete by position
         if (mark == 1) {
             LNode* p = *HL;
             *item = p->data;
@@ -188,7 +187,7 @@ bool DeleteList(LNode** HL, ElemType* item, int mark) {
     return false;
 }
 
-// 对单链表进行有序输出
+// Ordered output of singly linked list
 void OrderOutputList(LNode* HL, int mark) {
     if (HL == NULL) {
         printf("\n");
@@ -197,7 +196,7 @@ void OrderOutputList(LNode* HL, int mark) {
     int n = ListSize(HL);
     int* arr = (int*)malloc(n * sizeof(int));
     if (arr == NULL) {
-        printf("内存分配失败!\n");
+        printf("Memory allocation failed!\n");
         return;
     }
     LNode* p = HL;
@@ -205,7 +204,7 @@ void OrderOutputList(LNode* HL, int mark) {
         arr[i] = p->data;
         p = p->next;
     }
-    // 冒泡排序
+    // Bubble sort
     for (int i = 0; i < n - 1; i++) {
         for (int j = 0; j < n - 1 - i; j++) {
             if (mark == 0) {

@@ -5,28 +5,33 @@ int main() {
     LNode* list;
     InitList(&list);
 
-    // ¿ÕÁ´±í²âÊÔ
+    // ç©ºé“¾è¡¨æµ‹è¯•
     printf("Is Empty: %s\n", ListEmpty(list) ? "true":"false");
     printf("The length of List: %d\n\n", ListSize(list));
 
-    // Î²²å·¨
+    // å°¾æ’æ³•
     InsertList(&list, 10, 1);
     InsertList(&list, 20, 1);
     InsertList(&list, 30, 1);
     printf("List: "); TraverseList(list);
     printf("The length of List: %d\n\n", ListSize(list));
 
-    // Í·²å·¨
+    // å¤´æ’æ³•
     InsertList(&list, 35, 0);
     printf("List: "); TraverseList(list);
     printf("The length of List: %d\n\n", ListSize(list));
 
-    // Ö¸¶¨Î»ÖÃ²åÈë
-    InsertList(&list, 15, 3);
+    // æŒ‡å®šä½ç½®æ’å…¥
+    int insVal, insPos;
+    printf("Enter the value to insert: ");
+    scanf("%d", &insVal);
+    printf("Enter the position to insert: ");
+    scanf("%d", &insPos);
+    InsertList(&list, insVal, insPos);
     printf("List: "); TraverseList(list);
     printf("The length of List: %d\n\n", ListSize(list));
-
-    // °´Î»ÖÃÉ¾³ı
+    
+    // æŒ‰ä½ç½®åˆ é™¤
     int deletedVal,i;
     printf("Enter the mark: ");
     scanf("%d",&i);
@@ -39,7 +44,7 @@ int main() {
     printf("List: "); TraverseList(list);
     printf("\n");
 
-    // °´ÖµÉ¾³ı
+    // æŒ‰å€¼åˆ é™¤
     printf("Enter the deletedVal: ");
     scanf("%d",&deletedVal);
     getchar();
@@ -53,13 +58,13 @@ int main() {
     printf("List: "); TraverseList(list);
     printf("\n");
 
-    // ÓĞĞòÊä³ö
+    // æœ‰åºè¾“å‡º
     printf("Ascending List: "); OrderOutputList(list, 0);
     printf("Descending List: "); OrderOutputList(list, 1);
     printf("Origin List:"); TraverseList(list);
     printf("\n");
 
-    // Çå¿Õ
+    // æ¸…ç©º
     ClearList(&list);
     printf("Is Empty: %s\n", ListEmpty(list) ? "true":"false");
     printf("The length of List: %d\n", ListSize(list));
