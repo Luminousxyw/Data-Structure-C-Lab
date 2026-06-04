@@ -95,12 +95,12 @@ void InsertList(LNode** HL, ElemType item, int mark) {
     newNode->data = item;
     newNode->next = NULL;
 
-    if (mark == 0) {
+    if (mark == 1) {
         // 头插法
         newNode->next = *HL;
         *HL = newNode;
     }
-    else if (mark == 1) {
+    else if (mark == -1) {
         // 尾插法
         if (*HL == NULL) {
             *HL = newNode;
@@ -112,7 +112,7 @@ void InsertList(LNode** HL, ElemType item, int mark) {
             p->next = newNode;
         }
     }
-    else if (mark > 1) {
+    else if (mark > 0) {
         // 指定位置插入
         if (*HL == NULL) {
             printf("List is empty, cannot insert at specified position!\n");

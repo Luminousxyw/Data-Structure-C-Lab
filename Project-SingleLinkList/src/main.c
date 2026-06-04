@@ -10,14 +10,17 @@ int main() {
     printf("The length of List: %d\n\n", ListSize(list));
 
     // 尾插法
-    InsertList(&list, 10, 1);
-    InsertList(&list, 20, 1);
-    InsertList(&list, 30, 1);
+    InsertList(&list, 10, -1);
+    InsertList(&list, 20, -1);
+    InsertList(&list, 30, -1);
+    InsertList(&list, 15, -1);
+    InsertList(&list, 35, -1);
+    InsertList(&list, 40, -1);
     printf("List: "); TraverseList(list);
     printf("The length of List: %d\n\n", ListSize(list));
 
     // 头插法
-    InsertList(&list, 35, 0);
+    InsertList(&list, 35, 1);
     printf("List: "); TraverseList(list);
     printf("The length of List: %d\n\n", ListSize(list));
 
@@ -28,6 +31,7 @@ int main() {
     printf("Enter the position to insert: ");
     scanf("%d", &insPos);
     InsertList(&list, insVal, insPos);
+    printf("Insert successful.\n");
     printf("List: "); TraverseList(list);
     printf("The length of List: %d\n\n", ListSize(list));
 
@@ -51,7 +55,7 @@ int main() {
     if (DeleteList(&list, &deletedVal, 0)) {
         printf("Delete successful.\n");
     } 
-    else 
+    else
     {
         printf("Find failed.\n");
     }
