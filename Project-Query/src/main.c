@@ -14,10 +14,11 @@ static void InOrder_BST(BSTNode *T) {
     InOrder_BST(T->lchild); printf("%d ", T->key); InOrder_BST(T->rchild);
 }
 
-// ========== 自动校准高精度计时（通用） ==========
+// 自动校准高精度计时
 typedef void (*VoidFn)(void*);
+typedef void (*SetupFn)(void*, void*);
 
-static double auto_time_us(VoidFn run, void *ctx, VoidFn setup, void *src) {
+static double auto_time_us(VoidFn run, void *ctx, SetupFn setup, void *src) {
     double t0, t1, single;
     int repeat = 1;
     setup(ctx, src);
