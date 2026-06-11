@@ -1,184 +1,136 @@
 #include <stdio.h>
-#include <stdlib.h>
+#include <string.h>
 #include "linklist.h"
 
-static void print_int(const void* data) {
-    printf("%d", *(const int*)data);
-}
-
-static int compare_int(const void* a, const void* b) {
-    int ia = *(const int*)a;
-    int ib = *(const int*)b;
-    return (ia > ib) - (ia < ib);
-}
-
-static void free_int(void* data) {
-    free(data);
-}
-
-static int* make_int(int val) {
-    int* p = (int*)malloc(sizeof(int));
-    if (p == NULL) {
-        fprintf(stderr, "malloc failed!\n");
-        exit(1);
+static void show_list(LNode* list) {
+    printf("链表: [");
+    LNode* p = list;
+    while (p != NULL) {
+        printf("%s", p->data);
+        p = p->next;
+        if (p != NULL) printf(" ");
     }
-    *p = val;
-    return p;
+    printf("]  长度=%d  %s\n",
+           ListSize(list),
+           ListEmpty(list) ? "空" : "");
 }
 
-static void show_list(const LinkedList* list) {
-    printf("List: ");
-    TraverseList(list);
-    printf("Length: %d  Empty: %s\n\n",
-           ListSize(list), ListEmpty(list) ? "yes" : "no");
-}
-
-static int read_int(const char* prompt) {
-    int val;
-    printf("%s", prompt);
-    while (scanf("%d", &val) != 1) {
-        printf("Invalid input, try again: ");
-        while (getchar() != '\n');
+static int read_str(const char* prompt, char* out) {
+    char buf[MAX_LEN + 4];
+    while (1) {
+        printf("%s", prompt);
+        if (fgets(buf, sizeof(buf), stdin) == NULL) return 0;
+        if (buf[0] == 'q' && buf[1] == '\n') return 0;
+        size_t len = strlen(buf);
+        if (len > 0 && buf[len - 1] == '\n') buf[len - 1] = '\0';
+        if (buf[0] != '\0') {
+            strcpy(out, buf);
+            return 1;
+        }
+        printf("  输入不能为空, q 取消\n");
     }
-    return val;
+}
+
+static int read_int(const char* prompt, int* out) {
+    char buf[32];
+    while (1) {
+        printf("%s", prompt);
+        if (fgets(buf, sizeof(buf), stdin) == NULL) return 0;
+        if (buf[0] == 'q' && buf[1] == '\n') return 0;
+        if (sscanf(buf, "%d", out) == 1) return 1;
+        printf("  无效, q 取消\n");
+    }
 }
 
 int main() {
-    LinkedList list;
-    InitList(&list, print_int, compare_int, free_int);
+    LNode* list;
+    InitList(&list);
 
+    int choice, pos;
+    char val[MAX_LEN];
+    ElemType item;
 
-    int choice;
-    do {
-        printf("Menu:\n");
-        printf(" 1.Tail insert  2.Head insert  3.Position insert\n");
-        printf(" 4.Delete by val  5.Delete by pos  6.Update by pos\n");
-        printf(" 7.Find by val  8.Get by pos  9.Traverse\n");
-        printf("10.Asc output  11.Desc output\n");
-        printf("12.Length  13.Empty?  14.Clear\n");
-        printf(" 0.Exit\n");
+    while (1) {
+        printf("\n1.尾 2.头 3.插 4.值删 5.位删 ");
+        printf("6.改 7.查 8.取 9.览 10.升 11.降 ");
+        printf("12.长 13.空 14.清 0.退\n");
 
-        choice = read_int("Select: ");
-        while (getchar() != '\n');
-        printf("\n");
+        if (read_int("> ", &choice) != 1 || choice == 0)
+            break;
 
         switch (choice) {
-        case 1: {
-            int val = read_int("Value to tail-insert: ");
-            InsertList(&list, make_int(val), -1);
-            printf("Tail insert done.\n");
-            show_list(&list);
-            break;
-        }
-        case 2: {
-            int val = read_int("Value to head-insert: ");
-            InsertList(&list, make_int(val), 1);
-            printf("Head insert done.\n");
-            show_list(&list);
-            break;
-        }
-        case 3: {
-            int pos = read_int("Insert at position: ");
-            int val = read_int("Value: ");
-            if (pos == 1) {
-                InsertList(&list, make_int(val), 1);
-            } else if (pos > 1) {
-                InsertList(&list, make_int(val), pos);
-            } else {
-                printf("Position must >= 1\n");
+        case 1:
+            if (read_str("尾插串: ", val) == 1) {
+                InsertList(&list, val, -1);
+                show_list(list);
             }
-            show_list(&list);
             break;
-        }
-        case 4: {
-            int val = read_int("Value to delete: ");
-            void* key = &val;
-            if (DeleteList(&list, &key, 0)) {
-                printf("Deleted (val = %d)\n", val);
-            } else {
-                printf("Value not found.\n");
+        case 2:
+            if (read_str("头插串: ", val) == 1) {
+                InsertList(&list, val, 1);
+                show_list(list);
             }
-            show_list(&list);
             break;
-        }
-        case 5: {
-            int pos = read_int("Position to delete: ");
-            void* deleted = NULL;
-            if (DeleteList(&list, &deleted, pos)) {
-                printf("Deleted, value = %d\n", *(int*)deleted);
-                free(deleted);
-            } else {
-                printf("Delete failed (out of bounds).\n");
+        case 3:
+            if (read_int("位置: ", &pos) != 1) break;
+            if (pos < 1) { printf("位置>=1\n"); break; }
+            if (read_str("串: ", val) != 1) break;
+            InsertList(&list, val, pos == 1 ? 1 : pos);
+            show_list(list);
+            break;
+        case 4:
+            if (read_str("删串: ", val) == 1) {
+                strcpy(item, val);
+                DeleteList(&list, item, 0)
+                    ? printf("已删除 %s\n", val)
+                    : printf("未找到\n");
+                show_list(list);
             }
-            show_list(&list);
             break;
-        }
-        case 6: {
-            int pos = read_int("Position to update: ");
-            int val = read_int("New value: ");
-            if (UpdateList(&list, pos, make_int(val))) {
-                printf("Update done.\n");
-            } else {
-                printf("Update failed (out of bounds).\n");
+        case 5:
+            if (read_int("删位: ", &pos) == 1) {
+                if (DeleteList(&list, item, pos))
+                    printf("已删[%d]=%s\n", pos, item);
+                else
+                    printf("越界\n");
+                show_list(list);
             }
-            show_list(&list);
             break;
-        }
-        case 7: {
-            int val = read_int("Value to find: ");
-            void* found = NULL;
-            if (FindList(&list, &val, &found)) {
-                printf("Found, value = %d\n", *(int*)found);
-            } else {
-                printf("Not found.\n");
+        case 6:
+            if (read_int("改位: ", &pos) != 1) break;
+            if (read_str("新串: ", val) != 1) break;
+            UpdateList(list, pos, val)
+                ? printf("已更新\n")
+                : printf("越界\n");
+            show_list(list);
+            break;
+        case 7:
+            if (read_str("查串: ", val) == 1) {
+                FindList(list, val)
+                    ? printf("找到 %s\n", val)
+                    : printf("未找到\n");
+                show_list(list);
             }
-            show_list(&list);
             break;
-        }
-        case 8: {
-            int pos = read_int("Position: ");
-            void* data = GetElem(&list, pos);
-            if (data) {
-                printf("Element[%d] = %d\n", pos, *(int*)data);
-            } else {
-                printf("Position out of bounds.\n");
+        case 8:
+            if (read_int("位置: ", &pos) == 1) {
+                const char* s = GetElem(list, pos);
+                s ? printf("[%d]=%s\n", pos, s)
+                  : printf("越界\n");
+                show_list(list);
             }
-            show_list(&list);
             break;
+        case 9:  show_list(list); break;
+        case 10: printf("升: ["); OrderOutputList(list, 0); printf("]\n"); break;
+        case 11: printf("降: ["); OrderOutputList(list, 1); printf("]\n"); break;
+        case 12: printf("长度=%d\n", ListSize(list)); break;
+        case 13: printf("空否=%s\n", ListEmpty(list) ? "是" : "否"); break;
+        case 14: ClearList(&list); printf("已清空\n"); show_list(list); break;
+        default: printf("?\n"); break;
         }
-        case 9:
-            show_list(&list);
-            break;
-        case 10:
-            printf("Asc: ");
-            OrderOutputList(&list, 0);
-            printf("\n");
-            break;
-        case 11:
-            printf("Desc: ");
-            OrderOutputList(&list, 1);
-            printf("\n");
-            break;
-        case 12:
-            printf("Length = %d\n\n", ListSize(&list));
-            break;
-        case 13:
-            printf("Empty: %s\n\n", ListEmpty(&list) ? "yes" : "no");
-            break;
-        case 14:
-            ClearList(&list);
-            printf("List cleared.\n");
-            show_list(&list);
-            break;
-        case 0:
-            printf("Bye!\n");
-            break;
-        default:
-            printf("Invalid option, try again.\n\n");
-            break;
-        }
-    } while (choice != 0);
+    }
 
     ClearList(&list);
+    printf("再见\n");
     return 0;
 }

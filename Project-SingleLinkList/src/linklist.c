@@ -1,33 +1,25 @@
 #include "linklist.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 
-void InitList(LinkedList* list, PrintFunc pf, CompareFunc cf, FreeFunc ff) {
-    if (pf == NULL || cf == NULL) {
-        fprintf(stderr, "Error: PrintFunc and CompareFunc must not be NULL.\n");
-        exit(1);
-    }
-    list->head      = NULL;
-    list->print     = pf;
-    list->compare   = cf;
-    list->free_elem = ff;
+void InitList(LNode** HL) {
+    *HL = NULL;
 }
 
-void ClearList(LinkedList* list) {
+void ClearList(LNode** HL) {
     LNode* p;
-    while (list->head != NULL) {
-        p = list->head;
-        list->head = list->head->next;
-        if (list->free_elem && p->data) {
-            list->free_elem(p->data);
-        }
+    while (*HL != NULL) {
+        p = *HL;
+        *HL = (*HL)->next;
         free(p);
     }
 }
 
-int ListSize(const LinkedList* list) {
+int ListSize(LNode* HL) {
     int count = 0;
-    LNode* p = list->head;
+    LNode* p = HL;
     while (p != NULL) {
         count++;
         p = p->next;
@@ -35,13 +27,13 @@ int ListSize(const LinkedList* list) {
     return count;
 }
 
-bool ListEmpty(const LinkedList* list) {
-    return list->head == NULL;
+bool ListEmpty(LNode* HL) {
+    return HL == NULL;
 }
 
-void* GetElem(const LinkedList* list, int pos) {
+const char* GetElem(LNode* HL, int pos) {
     if (pos < 1) return NULL;
-    LNode* p = list->head;
+    LNode* p = HL;
     int i = 1;
     while (p != NULL && i < pos) {
         p = p->next;
@@ -51,105 +43,77 @@ void* GetElem(const LinkedList* list, int pos) {
     return p->data;
 }
 
-void TraverseList(const LinkedList* list) {
-    LNode* p = list->head;
+void TraverseList(LNode* HL) {
+    LNode* p = HL;
     while (p != NULL) {
-        list->print(p->data);
-        printf(" ");
+        printf("%s ", p->data);
         p = p->next;
     }
-    printf("\n");
 }
 
-bool FindList(const LinkedList* list, const void* key, void** result) {
-    LNode* p = list->head;
+bool FindList(LNode* HL, const char* item) {
+    LNode* p = HL;
     while (p != NULL) {
-        if (list->compare(key, p->data) == 0) {
-            if (result) *result = p->data;
-            return true;
-        }
+        if (strcmp(p->data, item) == 0) return true;
         p = p->next;
     }
     return false;
 }
 
-bool UpdateList(LinkedList* list, int pos, void* new_data) {
+bool UpdateList(LNode* HL, int pos, const char* item) {
     if (pos < 1) return false;
-    LNode* p = list->head;
+    LNode* p = HL;
     int i = 1;
     while (p != NULL && i < pos) {
         p = p->next;
         i++;
     }
     if (p == NULL) return false;
-    if (list->free_elem && p->data) {
-        list->free_elem(p->data);
-    }
-    p->data = new_data;
+    strcpy(p->data, item);
     return true;
 }
 
-void InsertList(LinkedList* list, void* data, int mark) {
+void InsertList(LNode** HL, const char* item, int mark) {
     LNode* newNode = (LNode*)malloc(sizeof(LNode));
-    if (newNode == NULL) {
-        fprintf(stderr, "Memory allocation failed!\n");
-        exit(1);
-    }
-    newNode->data = data;
+    strcpy(newNode->data, item);
     newNode->next = NULL;
 
     if (mark == 1) {
-        newNode->next = list->head;
-        list->head    = newNode;
+        newNode->next = *HL;
+        *HL = newNode;
     } else if (mark == -1) {
-        if (list->head == NULL) {
-            list->head = newNode;
+        if (*HL == NULL) {
+            *HL = newNode;
         } else {
-            LNode* p = list->head;
+            LNode* p = *HL;
             while (p->next != NULL) p = p->next;
             p->next = newNode;
         }
     } else if (mark > 1) {
-        if (list->head == NULL) {
-            printf("List is empty, cannot insert at specified position!\n");
-            free(newNode);
-            return;
-        }
-        LNode* p = list->head;
+        if (*HL == NULL) { free(newNode); return; }
+        LNode* p = *HL;
         int i = 1;
         while (p != NULL && i < mark - 1) {
             p = p->next;
             i++;
         }
-        if (p == NULL) {
-            printf("Insert position out of bounds!\n");
-            free(newNode);
-            return;
-        }
+        if (p == NULL) { free(newNode); return; }
         newNode->next = p->next;
         p->next = newNode;
     } else {
-        printf("Invalid mark parameter!\n");
         free(newNode);
     }
 }
 
-bool DeleteList(LinkedList* list, void** item, int mark) {
-    if (list->head == NULL) return false;
+bool DeleteList(LNode** HL, char* item_out, int mark) {
+    if (*HL == NULL) return false;
 
     if (mark == 0) {
-        void* key = *item;
-        LNode *p = list->head, *prev = NULL;
+        LNode *p = *HL, *prev = NULL;
         while (p != NULL) {
-            if (list->compare(key, p->data) == 0) {
-                if (prev == NULL) {
-                    list->head = p->next;
-                } else {
-                    prev->next = p->next;
-                }
-                if (list->free_elem && p->data) {
-                    list->free_elem(p->data);
-                }
+            if (strcmp(p->data, item_out) == 0) {
+                if (prev == NULL) *HL = p->next;
+                else              prev->next = p->next;
                 free(p);
                 return true;
             }
@@ -159,13 +123,13 @@ bool DeleteList(LinkedList* list, void** item, int mark) {
         return false;
     } else if (mark > 0) {
         if (mark == 1) {
-            LNode* p = list->head;
-            *item = p->data;
-            list->head = p->next;
+            LNode* p = *HL;
+            strcpy(item_out, p->data);
+            *HL = p->next;
             free(p);
             return true;
         } else {
-            LNode* p = list->head;
+            LNode* p = *HL;
             int i = 1;
             while (p != NULL && i < mark - 1) {
                 p = p->next;
@@ -173,7 +137,7 @@ bool DeleteList(LinkedList* list, void** item, int mark) {
             }
             if (p == NULL || p->next == NULL) return false;
             LNode* q = p->next;
-            *item = q->data;
+            strcpy(item_out, q->data);
             p->next = q->next;
             free(q);
             return true;
@@ -182,42 +146,60 @@ bool DeleteList(LinkedList* list, void** item, int mark) {
     return false;
 }
 
-void OrderOutputList(const LinkedList* list, int mark) {
-    if (list->head == NULL) {
-        printf("\n");
-        return;
+// 判断字符串是否纯数字（非负整数），可扩展负号
+static int is_number(const char* s) {
+    if (*s == '\0') return 0;
+    if (*s == '-' && *(s + 1) != '\0') s++;
+    while (*s) {
+        if (!isdigit((unsigned char)*s)) return 0;
+        s++;
     }
-    int n = ListSize(list);
-    void** arr = (void**)malloc(n * sizeof(void*));
-    if (arr == NULL) {
-        fprintf(stderr, "Memory allocation failed!\n");
-        return;
+    return 1;
+}
+
+// 比较两个元素，返回 <0 表示 a<b, >0 表示 a>b, ==0 相等
+// 数字在前且按数值，字符串在后按字典序
+static int elem_compare(const char* a, const char* b) {
+    int na = is_number(a);
+    int nb = is_number(b);
+
+    if (na && nb) {
+        // 都是数字，按数值比
+        long long va = atoll(a);
+        long long vb = atoll(b);
+        return (va > vb) - (va < vb);
     }
-    LNode* p = list->head;
+    if (!na && !nb) {
+        // 都是字符串，按字典序
+        return strcmp(a, b);
+    }
+    // 一个是数字一个是字符串，数字在前
+    return na ? -1 : 1;
+}
+
+void OrderOutputList(LNode* HL, int mark) {
+    if (HL == NULL) return;
+    int n = ListSize(HL);
+    const char** arr = (const char**)malloc(n * sizeof(const char*));
+    LNode* p = HL;
     for (int i = 0; i < n; i++) {
         arr[i] = p->data;
         p = p->next;
     }
+
+    // 冒泡排序
     for (int i = 0; i < n - 1; i++) {
         for (int j = 0; j < n - 1 - i; j++) {
-            if (list->compare(arr[j], arr[j + 1]) > 0) {
-                void* tmp = arr[j];
-                arr[j]     = arr[j + 1];
+            int cmp = elem_compare(arr[j], arr[j + 1]);
+            if ((mark == 0 && cmp > 0) || (mark != 0 && cmp < 0)) {
+                const char* tmp = arr[j];
+                arr[j] = arr[j + 1];
                 arr[j + 1] = tmp;
             }
         }
     }
-    if (mark == 0) {
-        for (int i = 0; i < n; i++) {
-            list->print(arr[i]);
-            printf(" ");
-        }
-    } else {
-        for (int i = n - 1; i >= 0; i--) {
-            list->print(arr[i]);
-            printf(" ");
-        }
-    }
-    printf("\n");
+
+    for (int i = 0; i < n; i++)
+        printf("%s ", arr[i]);
     free(arr);
 }
