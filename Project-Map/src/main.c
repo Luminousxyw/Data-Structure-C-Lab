@@ -74,6 +74,5 @@ int main(void) {
         }
     } while (choice != 5);
 
-    getchar();
     return 0;
 }

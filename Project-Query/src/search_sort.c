@@ -1,10 +1,10 @@
 #include "search_sort.h"
 
-/* ========== 查找算法 ========== */
+/* ========== Search Algorithms ========== */
 
 int Search_Seq(SSTable ST, KeyType kval) {
     int i;
-    ST.data[0].key = kval;          // 哨兵
+    ST.data[0].key = kval;          // sentinel
     for (i = ST.length; ST.data[i].key != kval; i--);
     return i;
 }
@@ -27,7 +27,7 @@ int Search_Block(RecType ST[], Index ind[], KeyType key, int n, int b) {
     int i, j, s;
     int low = 0, high = b - 1, mid;
 
-    // 折半查找索引表
+    // Binary search on index table
     while (low <= high) {
         mid = (low + high) / 2;
         if (key <= ind[mid].maxKey)
@@ -40,7 +40,7 @@ int Search_Block(RecType ST[], Index ind[], KeyType key, int n, int b) {
     i = ind[low].start;
     s = (low == b - 1) ? (n - i) : (ind[low + 1].start - i);
 
-    // 块内顺序查找
+    // Sequential search within the block
     for (j = 0; j < s; j++)
         if (ST[i + j].key == key)
             return i + j;
@@ -65,7 +65,7 @@ void Insert_BST(BSTNode **T, KeyType key) {
     } else if (key > (*T)->key) {
         Insert_BST(&(*T)->rchild, key);
     }
-    // 相等时忽略
+    // Ignore duplicate keys
 }
 
 int Delete_BST(BSTNode **T, KeyType key) {
@@ -78,13 +78,13 @@ int Delete_BST(BSTNode **T, KeyType key) {
         return Delete_BST(&(*T)->rchild, key);
     else {
         p = *T;
-        if (!p->lchild) {               // 只有右子树
+        if (!p->lchild) {               // Right subtree only
             *T = p->rchild;
             free(p);
-        } else if (!p->rchild) {        // 只有左子树
+        } else if (!p->rchild) {        // Left subtree only
             *T = p->lchild;
             free(p);
-        } else {                        // 左右子树均存在，用直接前驱替代
+        } else {                        // Both subtrees exist: replace with inorder predecessor
             q = p;
             s = p->lchild;
             while (s->rchild) {
@@ -115,7 +115,7 @@ void SearchHash(HashTable H, KeyType K, int *p, int *c) {
 }
 
 
-/* ========== 排序算法 ========== */
+/* ========== Sorting Algorithms ========== */
 
 void PrintList(SqList L, const char *title) {
     int i;
@@ -130,7 +130,7 @@ void BinInsSort(SqList *L) {
     for (i = 2; i <= L->length; i++) {
         L->data[0] = L->data[i];
         low = 1; high = i - 1;
-        while (low <= high) {          // 二分定位
+        while (low <= high) {
             mid = (low + high) / 2;
             if (L->data[0].key < L->data[mid].key)
                 high = mid - 1;
@@ -141,7 +141,6 @@ void BinInsSort(SqList *L) {
             L->data[j + 1] = L->data[j];
         L->data[low] = L->data[0];
     }
-    PrintList(*L, "BinInsSort");
 }
 
 void Shell_sort(SqList *L, int dk[], int t) {
@@ -157,7 +156,6 @@ void Shell_sort(SqList *L, int dk[], int t) {
             }
         }
     }
-    PrintList(*L, "Shell_sort");
 }
 
 void Bubble_Sort(SqList *L) {
@@ -175,7 +173,6 @@ void Bubble_Sort(SqList *L) {
         }
         if (!swapped) break;
     }
-    PrintList(*L, "Bubble_sort");
 }
 
 static int Partition(SqList *L, int low, int high) {
@@ -200,20 +197,19 @@ void QuickSort(SqList *L, int low, int high) {
 }
 
 void Simple_selection_sort(SqList *L) {
-    int i, j, min;
+    int i, j, minIndex;
     RecType tmp;
     for (i = 1; i < L->length; i++) {
-        min = i;
+        minIndex = i;
         for (j = i + 1; j <= L->length; j++)
-            if (L->data[j].key < L->data[min].key)
-                min = j;
-        if (min != i) {
+            if (L->data[j].key < L->data[minIndex].key)
+                minIndex = j;
+        if (minIndex != i) {
             tmp = L->data[i];
-            L->data[i] = L->data[min];
-            L->data[min] = tmp;
+            L->data[i] = L->data[minIndex];
+            L->data[minIndex] = tmp;
         }
     }
-    PrintList(*L, "Selection_sort");
 }
 
 static void HeapAdjust(SqList *L, int s, int m) {
@@ -231,15 +227,14 @@ static void HeapAdjust(SqList *L, int s, int m) {
 void Heap_Sort(SqList *L) {
     int i;
     RecType tmp;
-    for (i = L->length / 2; i >= 1; i--)   // 建大顶堆
+    for (i = L->length / 2; i >= 1; i--)   // Build max-heap
         HeapAdjust(L, i, L->length);
-    for (i = L->length; i > 1; i--) {       // 排序
+    for (i = L->length; i > 1; i--) {       // Sort
         tmp = L->data[1];
         L->data[1] = L->data[i];
         L->data[i] = tmp;
         HeapAdjust(L, 1, i - 1);
     }
-    PrintList(*L, "Heap_sort");
 }
 
 static void Merge(RecType SR[], RecType TR[], int i, int m, int n) {
@@ -268,8 +263,14 @@ static void MSort(RecType SR[], RecType TR1[], int s, int t) {
 
 void Merge_sort(SqList *L, RecType DR[]) {
     MSort(L->data, DR, 1, L->length);
-    printf("Merge_sort : ");
-    for (int i = 1; i <= L->length; i++)
-        printf("%d ", DR[i].key);
-    printf("\n");
+}
+
+/* ========== Utility Functions ========== */
+
+void FreeBST(BSTNode **T) {
+    if (!*T) return;
+    FreeBST(&(*T)->lchild);
+    FreeBST(&(*T)->rchild);
+    free(*T);
+    *T = NULL;
 }
