@@ -104,7 +104,7 @@ void PrintAdjMatrix(MTGraph g) {
         printf("  %c ", g.vexs[i]);
         for (j = 0; j < g.numVertex; j++) {
             if (g.edges[i][j] == INFINITY)
-                printf("  ∞ ");
+                printf("  INF ");
             else
                 printf("%3d ", g.edges[i][j]);
         }
