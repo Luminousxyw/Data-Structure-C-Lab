@@ -2,13 +2,13 @@
 
 // 显示主菜单
 static void showMenu(void) {
-    printf("  Graph Algorithm Toolkit:\n");
-    printf("  1. DFS & BFS\n");
-    printf("  2. Topological Sort\n");
-    printf("  3. Critical Path\n");
-    printf("  4. Dijkstra Shortest Path\n");
-    printf("  5. Quit\n");
-    printf("  Select: ");
+    printf("Graph Algorithm Toolkit:\n");
+    printf("1. DFS & BFS\n");
+    printf("2. Topological Sort\n");
+    printf("3. Critical Path\n");
+    printf("4. Dijkstra Shortest Path\n");
+    printf("5. Quit\n");
+    printf("Select: ");
 }
 
 int main(void) {
