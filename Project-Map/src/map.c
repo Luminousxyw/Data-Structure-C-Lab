@@ -1,7 +1,9 @@
 #include "map.h"
+#include <string.h>
 
-static int visited[MAX_VERTEX_NUM];
+static int visited[MAX_VERTEX_NUM];   // DFS 访问标记数组
 
+// 深度优先递归遍历
 static void DFS_Recursive(GraphList G, int v) {
     EdgeNode *p;
     visited[v] = 1;
@@ -11,8 +13,8 @@ static void DFS_Recursive(GraphList G, int v) {
             DFS_Recursive(G, p->adjvex);
 }
 
-/* ---------- CreateGraph ---------- */
-void CreateGraph(GraphList *g) {
+// 交互式创建邻接表图（directed=1 有向，0 无向）
+void CreateGraph(GraphList *g, int directed) {
     int i, j, k, weight;
     EdgeNode *e;
 
@@ -20,37 +22,125 @@ void CreateGraph(GraphList *g) {
     scanf("%d %d", &g->numVertex, &g->numEdge);
 
     for (i = 0; i < g->numVertex; i++) {
-        printf("Vertex %d name (char): ", i + 1);
+        printf("  Vertex %d name (single char): ", i);
         scanf(" %c", &g->adjList[i].data);
         g->adjList[i].firstEdge = NULL;
         g->adjList[i].inDegree  = 0;
     }
 
     for (k = 0; k < g->numEdge; k++) {
-        printf("Edge %d (src dst weight): ", k + 1);
+        printf("  Edge %d (src_index dst_index weight): ", k);
         scanf("%d %d %d", &i, &j, &weight);
 
+        // 插入边 i -> j
         e = (EdgeNode *)malloc(sizeof(EdgeNode));
         e->adjvex = j;
         e->weight = weight;
         e->next = g->adjList[i].firstEdge;
         g->adjList[i].firstEdge = e;
-
         g->adjList[j].inDegree++;
+
+        // 无向图还需插入反向边 j -> i
+        if (!directed) {
+            e = (EdgeNode *)malloc(sizeof(EdgeNode));
+            e->adjvex = i;
+            e->weight = weight;
+            e->next = g->adjList[j].firstEdge;
+            g->adjList[j].firstEdge = e;
+            g->adjList[i].inDegree++;
+        }
+    }
+    printf("Graph created.\n\n");
+}
+
+// 交互式创建邻接矩阵图
+void CreateAdjMatrix(MTGraph *g, int directed) {
+    int i, j, k, w;
+
+    printf("Enter vertex count and edge count: ");
+    scanf("%d %d", &g->numVertex, &g->numEdge);
+
+    for (i = 0; i < g->numVertex; i++) {
+        printf("  Vertex %d name (single char): ", i);
+        scanf(" %c", &g->vexs[i]);
+    }
+
+    // 初始化矩阵：对角元为 0，其余为 INFINITY
+    for (i = 0; i < g->numVertex; i++)
+        for (j = 0; j < g->numVertex; j++)
+            g->edges[i][j] = (i == j) ? 0 : INFINITY;
+
+    for (k = 0; k < g->numEdge; k++) {
+        printf("  Edge %d (src_index dst_index weight): ", k);
+        scanf("%d %d %d", &i, &j, &w);
+        g->edges[i][j] = w;
+        if (!directed)
+            g->edges[j][i] = w;
+    }
+    printf("Matrix graph created.\n\n");
+}
+
+// 打印邻接表结构
+void PrintAdjList(GraphList g) {
+    int i;
+    EdgeNode *p;
+    printf("Adjacency List:\n");
+    for (i = 0; i < g.numVertex; i++) {
+        printf("  [%d] %c  (in:%d) -> ", i, g.adjList[i].data, g.adjList[i].inDegree);
+        for (p = g.adjList[i].firstEdge; p; p = p->next)
+            printf("%c(w:%d) ", g.adjList[p->adjvex].data, p->weight);
+        printf("\n");
     }
 }
 
-/* ---------- DFS ---------- */
+// 打印邻接矩阵
+void PrintAdjMatrix(MTGraph g) {
+    int i, j;
+    printf("Adjacency Matrix:\n");
+    printf("    ");
+    for (i = 0; i < g.numVertex; i++) printf("%3c ", g.vexs[i]);
+    printf("\n");
+    for (i = 0; i < g.numVertex; i++) {
+        printf("  %c ", g.vexs[i]);
+        for (j = 0; j < g.numVertex; j++) {
+            if (g.edges[i][j] == INFINITY)
+                printf("  ∞ ");
+            else
+                printf("%3d ", g.edges[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+// 释放邻接表动态边节点
+void FreeGraph(GraphList *g) {
+    int i;
+    EdgeNode *p, *tmp;
+    for (i = 0; i < g->numVertex; i++) {
+        p = g->adjList[i].firstEdge;
+        while (p) {
+            tmp = p;
+            p = p->next;
+            free(tmp);
+        }
+        g->adjList[i].firstEdge = NULL;
+        g->adjList[i].inDegree = 0;
+    }
+    g->numVertex = 0;
+    g->numEdge = 0;
+}
+
+// 深度优先遍历入口
 void DFS(GraphList G) {
     int i;
     for (i = 0; i < G.numVertex; i++) visited[i] = 0;
     printf("DFS: ");
     for (i = 0; i < G.numVertex; i++)
         if (!visited[i]) DFS_Recursive(G, i);
-    printf("\n");
+    printf("\n\n");
 }
 
-/* ---------- BFS ---------- */
+// 广度优先遍历（使用队列）
 void BFS(GraphList G) {
     int i, v;
     int queue[MAX_VERTEX_NUM], front = 0, rear = 0;
@@ -74,10 +164,10 @@ void BFS(GraphList G) {
                 }
         }
     }
-    printf("\n");
+    printf("\n\n");
 }
 
-/* ---------- TopologicalSort (Kahn) ---------- */
+// 拓扑排序（Kahn 算法，用栈暂存入度为 0 的顶点）
 int TopologicalSort(AdjGraph G) {
     int i, v;
     int indegree[MAX_VERTEX_NUM];
@@ -105,17 +195,20 @@ int TopologicalSort(AdjGraph G) {
     printf("\n");
 
     if (count < G.numVertex) {
-        printf("Cycle detected.\n");
+        printf("Cycle detected.\n\n");
         return 0;
     }
+    printf("Topological sort succeeded.\n\n");
     return 1;
 }
 
-/* ---------- CriticalPath ---------- */
+// 关键路径全局图及辅助数组
 GraphList G_Critical;
-static int ve[MAX_VERTEX_NUM];
-static int vl[MAX_VERTEX_NUM];
+GraphList G_Topo;
+static int ve[MAX_VERTEX_NUM];   // 事件最早发生时间
+static int vl[MAX_VERTEX_NUM];   // 事件最晚发生时间
 
+// 关键路径算法（AOE 网）
 void CriticalPath(void) {
     int i, k, v;
     EdgeNode *p;
@@ -123,7 +216,7 @@ void CriticalPath(void) {
     int indegree[MAX_VERTEX_NUM], stack[MAX_VERTEX_NUM], top = -1;
     int ee, el;
 
-    /* step 1: topological sort, compute ve[] */
+    // 正向拓扑排序，求 ve
     for (i = 0; i < G_Critical.numVertex; i++) {
         indegree[i] = G_Critical.adjList[i].inDegree;
         ve[i] = 0;
@@ -143,11 +236,11 @@ void CriticalPath(void) {
     }
 
     if (topoCount < G_Critical.numVertex) {
-        printf("Cycle detected.\n");
+        printf("Cycle detected.\n\n");
         return;
     }
 
-    /* step 2: reverse order, compute vl[] */
+    // 逆向逆拓扑序，求 vl
     for (i = 0; i < G_Critical.numVertex; i++)
         vl[i] = ve[G_Critical.numVertex - 1];
 
@@ -160,7 +253,7 @@ void CriticalPath(void) {
         }
     }
 
-    /* step 3: output critical activities (ee == el) */
+    // 输出关键活动 (最早开始时间 == 最晚开始时间)
     printf("Critical path:\n");
     for (i = 0; i < G_Critical.numVertex; i++)
         for (p = G_Critical.adjList[i].firstEdge; p; p = p->next) {
@@ -168,21 +261,20 @@ void CriticalPath(void) {
             ee = ve[i];
             el = vl[k] - p->weight;
             if (ee == el)
-                printf("  %c -> %c (w:%d)\n",
+                printf("  %c -> %c  (weight: %d)\n",
                     G_Critical.adjList[i].data,
                     G_Critical.adjList[k].data,
                     p->weight);
         }
+    printf("Project minimum duration: %d\n\n", ve[G_Critical.numVertex - 1]);
 }
 
-/* ---------- ShortestPath (Dijkstra) ---------- */
-void ShortestPath(MTGraph G) {
-    int i, j, k, start, min;
+// Dijkstra 最短路径算法
+void ShortestPath(MTGraph G, int start) {
+    int i, j, k, min;
     int dist[MAX_VERTEX_NUM], path[MAX_VERTEX_NUM], final[MAX_VERTEX_NUM];
 
-    printf("Start vertex index (0~%d): ", G.numVertex - 1);
-    scanf("%d", &start);
-
+    // 初始化
     for (i = 0; i < G.numVertex; i++) {
         dist[i]  = G.edges[start][i];
         final[i] = 0;
@@ -192,6 +284,7 @@ void ShortestPath(MTGraph G) {
     final[start] = 1;
     path[start]  = -1;
 
+    // 主循环：每次找到一个最近未确定顶点
     for (i = 0; i < G.numVertex - 1; i++) {
         min = INFINITY; k = -1;
         for (j = 0; j < G.numVertex; j++)
@@ -201,6 +294,8 @@ void ShortestPath(MTGraph G) {
         if (k == -1) break;
 
         final[k] = 1;
+
+        // 松弛操作
         for (j = 0; j < G.numVertex; j++)
             if (!final[j] && G.edges[k][j] < INFINITY
                 && dist[k] + G.edges[k][j] < dist[j]) {
@@ -209,6 +304,7 @@ void ShortestPath(MTGraph G) {
             }
     }
 
+    // 输出结果及路径回溯
     printf("Shortest paths from %c:\n", G.vexs[start]);
     for (i = 0; i < G.numVertex; i++) {
         if (i == start) continue;
@@ -226,4 +322,5 @@ void ShortestPath(MTGraph G) {
         }
         printf("\n");
     }
+    printf("\n");
 }
