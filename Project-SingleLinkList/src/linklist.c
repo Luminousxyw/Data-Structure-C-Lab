@@ -2,25 +2,32 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// 初始化单链表
-void InitList(LNode** HL) {
-    *HL = NULL;
+void InitList(LinkedList* list, PrintFunc pf, CompareFunc cf, FreeFunc ff) {
+    if (pf == NULL || cf == NULL) {
+        fprintf(stderr, "Error: PrintFunc and CompareFunc must not be NULL.\n");
+        exit(1);
+    }
+    list->head      = NULL;
+    list->print     = pf;
+    list->compare   = cf;
+    list->free_elem = ff;
 }
 
-// 清空单链表
-void ClearList(LNode** HL) {
+void ClearList(LinkedList* list) {
     LNode* p;
-    while (*HL != NULL) {
-        p = *HL;
-        *HL = (*HL)->next;
+    while (list->head != NULL) {
+        p = list->head;
+        list->head = list->head->next;
+        if (list->free_elem && p->data) {
+            list->free_elem(p->data);
+        }
         free(p);
     }
 }
 
-// 求单链表长度
-int ListSize(LNode* HL) {
+int ListSize(const LinkedList* list) {
     int count = 0;
-    LNode* p = HL;
+    LNode* p = list->head;
     while (p != NULL) {
         count++;
         p = p->next;
@@ -28,46 +35,37 @@ int ListSize(LNode* HL) {
     return count;
 }
 
-// 检查单链表是否为空
-bool ListEmpty(LNode* HL) {
-    return (HL == NULL);
+bool ListEmpty(const LinkedList* list) {
+    return list->head == NULL;
 }
 
-// 返回单链表中指定序号的结点值
-ElemType GetElem(LNode* HL, int pos) {
-    if (pos < 1) {
-        printf("Invalid position!\n");
-        exit(1);
-    }
-    LNode* p = HL;
+void* GetElem(const LinkedList* list, int pos) {
+    if (pos < 1) return NULL;
+    LNode* p = list->head;
     int i = 1;
     while (p != NULL && i < pos) {
         p = p->next;
         i++;
     }
-    if (p == NULL) {
-        printf("Position out of bounds!\n");
-        exit(1);
-    }
+    if (p == NULL) return NULL;
     return p->data;
 }
 
-// 遍历单链表
-void TraverseList(LNode* HL) {
-    LNode* p = HL;
+void TraverseList(const LinkedList* list) {
+    LNode* p = list->head;
     while (p != NULL) {
-        printf("%d ", p->data);
+        list->print(p->data);
+        printf(" ");
         p = p->next;
     }
     printf("\n");
 }
 
-// 从单链表中查找元素
-bool FindList(LNode* HL, ElemType* item) {
-    LNode* p = HL;
+bool FindList(const LinkedList* list, const void* key, void** result) {
+    LNode* p = list->head;
     while (p != NULL) {
-        if (p->data == *item) {
-            *item = p->data;   // 返回找到的值
+        if (list->compare(key, p->data) == 0) {
+            if (result) *result = p->data;
             return true;
         }
         p = p->next;
@@ -75,51 +73,49 @@ bool FindList(LNode* HL, ElemType* item) {
     return false;
 }
 
-// 更新单链表中的给定元素
-// 将链表第一个结点的值更新为 item
-bool UpdateList(LNode* HL, ElemType item) {
-    if (HL == NULL) {
-        return false;
+bool UpdateList(LinkedList* list, int pos, void* new_data) {
+    if (pos < 1) return false;
+    LNode* p = list->head;
+    int i = 1;
+    while (p != NULL && i < pos) {
+        p = p->next;
+        i++;
     }
-    HL->data = item;
+    if (p == NULL) return false;
+    if (list->free_elem && p->data) {
+        list->free_elem(p->data);
+    }
+    p->data = new_data;
     return true;
 }
 
-// 向单链表插入元素
-void InsertList(LNode** HL, ElemType item, int mark) {
+void InsertList(LinkedList* list, void* data, int mark) {
     LNode* newNode = (LNode*)malloc(sizeof(LNode));
     if (newNode == NULL) {
-        printf("Memory allocation failed!\n");
+        fprintf(stderr, "Memory allocation failed!\n");
         exit(1);
     }
-    newNode->data = item;
+    newNode->data = data;
     newNode->next = NULL;
 
     if (mark == 1) {
-        // 头插法
-        newNode->next = *HL;
-        *HL = newNode;
-    }
-    else if (mark == -1) {
-        // 尾插法
-        if (*HL == NULL) {
-            *HL = newNode;
+        newNode->next = list->head;
+        list->head    = newNode;
+    } else if (mark == -1) {
+        if (list->head == NULL) {
+            list->head = newNode;
         } else {
-            LNode* p = *HL;
-            while (p->next != NULL) {
-                p = p->next;
-            }
+            LNode* p = list->head;
+            while (p->next != NULL) p = p->next;
             p->next = newNode;
         }
-    }
-    else if (mark > 0) {
-        // 指定位置插入
-        if (*HL == NULL) {
+    } else if (mark > 1) {
+        if (list->head == NULL) {
             printf("List is empty, cannot insert at specified position!\n");
             free(newNode);
             return;
         }
-        LNode* p = *HL;
+        LNode* p = list->head;
         int i = 1;
         while (p != NULL && i < mark - 1) {
             p = p->next;
@@ -132,28 +128,28 @@ void InsertList(LNode** HL, ElemType item, int mark) {
         }
         newNode->next = p->next;
         p->next = newNode;
-    }
-    else {
+    } else {
         printf("Invalid mark parameter!\n");
         free(newNode);
     }
 }
 
-// 从单链表中删除元素
-bool DeleteList(LNode** HL, ElemType* item, int mark) {
-    if (*HL == NULL) return false;
+bool DeleteList(LinkedList* list, void** item, int mark) {
+    if (list->head == NULL) return false;
 
     if (mark == 0) {
-        // 按值删除
-        LNode *p = *HL, *prev = NULL;
+        void* key = *item;
+        LNode *p = list->head, *prev = NULL;
         while (p != NULL) {
-            if (p->data == *item) {
+            if (list->compare(key, p->data) == 0) {
                 if (prev == NULL) {
-                    *HL = p->next;
+                    list->head = p->next;
                 } else {
                     prev->next = p->next;
                 }
-                *item = p->data;  // 返回被删除的值
+                if (list->free_elem && p->data) {
+                    list->free_elem(p->data);
+                }
                 free(p);
                 return true;
             }
@@ -161,17 +157,15 @@ bool DeleteList(LNode** HL, ElemType* item, int mark) {
             p = p->next;
         }
         return false;
-    }
-    else if (mark > 0) {
-        // 按位置删除
+    } else if (mark > 0) {
         if (mark == 1) {
-            LNode* p = *HL;
+            LNode* p = list->head;
             *item = p->data;
-            *HL = p->next;
+            list->head = p->next;
             free(p);
             return true;
         } else {
-            LNode* p = *HL;
+            LNode* p = list->head;
             int i = 1;
             while (p != NULL && i < mark - 1) {
                 p = p->next;
@@ -188,43 +182,41 @@ bool DeleteList(LNode** HL, ElemType* item, int mark) {
     return false;
 }
 
-// 对单链表进行有序输出
-void OrderOutputList(LNode* HL, int mark) {
-    if (HL == NULL) {
+void OrderOutputList(const LinkedList* list, int mark) {
+    if (list->head == NULL) {
         printf("\n");
         return;
     }
-    int n = ListSize(HL);
-    int* arr = (int*)malloc(n * sizeof(int));
+    int n = ListSize(list);
+    void** arr = (void**)malloc(n * sizeof(void*));
     if (arr == NULL) {
-        printf("Memory allocation failed!\n");
+        fprintf(stderr, "Memory allocation failed!\n");
         return;
     }
-    LNode* p = HL;
+    LNode* p = list->head;
     for (int i = 0; i < n; i++) {
         arr[i] = p->data;
         p = p->next;
     }
-    // 冒泡排序
     for (int i = 0; i < n - 1; i++) {
         for (int j = 0; j < n - 1 - i; j++) {
-            if (mark == 0) {
-                if (arr[j] > arr[j + 1]) {
-                    int temp = arr[j];
-                    arr[j] = arr[j + 1];
-                    arr[j + 1] = temp;
-                }
-            } else {
-                if (arr[j] < arr[j + 1]) {
-                    int temp = arr[j];
-                    arr[j] = arr[j + 1];
-                    arr[j + 1] = temp;
-                }
+            if (list->compare(arr[j], arr[j + 1]) > 0) {
+                void* tmp = arr[j];
+                arr[j]     = arr[j + 1];
+                arr[j + 1] = tmp;
             }
         }
     }
-    for (int i = 0; i < n; i++) {
-        printf("%d ", arr[i]);
+    if (mark == 0) {
+        for (int i = 0; i < n; i++) {
+            list->print(arr[i]);
+            printf(" ");
+        }
+    } else {
+        for (int i = n - 1; i >= 0; i--) {
+            list->print(arr[i]);
+            printf(" ");
+        }
     }
     printf("\n");
     free(arr);

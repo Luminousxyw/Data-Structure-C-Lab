@@ -1,48 +1,60 @@
 #ifndef LINKLIST_H
 #define LINKLIST_H
+
 #include <stdbool.h>
 
-// 定义ElemType为int
-typedef int ElemType;
+// 回调：打印一个元素
+typedef void (*PrintFunc)(const void* data);
 
-// 单链表中结点的类型
+// 回调：比较两个元素，返回 <0 / 0 / >0
+typedef int  (*CompareFunc)(const void* a, const void* b);
+
+// 回调：释放一个元素
+typedef void (*FreeFunc)(void* data);
+
+// 节点
 typedef struct LNode {
-    ElemType data;       // 值域
-    struct LNode* next;  // 指针域
+    void*        data;
+    struct LNode* next;
 } LNode;
 
-// 初始化单链表
-void InitList(LNode** HL);
+// 链表
+typedef struct LinkedList {
+    LNode*      head;
+    PrintFunc   print;
+    CompareFunc compare;
+    FreeFunc    free_elem;
+} LinkedList;
 
-// 清空单链表
-void ClearList(LNode** HL);
+// 初始化，print 和 compare 不可为 NULL
+void  InitList   (LinkedList* list, PrintFunc pf, CompareFunc cf, FreeFunc ff);
 
-// 求单链表长度
-int ListSize(LNode* HL);
+// 清空
+void  ClearList  (LinkedList* list);
 
-// 检查单链表是否为空
-bool ListEmpty(LNode* HL);
+// 长度 & 判空
+int   ListSize   (const LinkedList* list);
+bool  ListEmpty  (const LinkedList* list);
 
-// 返回单链表中指定序号的结点值
-ElemType GetElem(LNode* HL, int pos);
+// 按位置取数据指针，失败返回 NULL
+void* GetElem    (const LinkedList* list, int pos);
 
-// 遍历单链表
-void TraverseList(LNode* HL);
+// 遍历打印
+void  TraverseList(const LinkedList* list);
 
-// 从单链表中查找元素
-bool FindList(LNode* HL, ElemType* item);
+// 按值查找，result 接收找到的数据指针
+bool  FindList   (const LinkedList* list, const void* key, void** result);
 
-// 更新单链表中的结点值为item
-// ？不知道更新哪一个节点
-bool UpdateList(LNode* HL, ElemType item);
+// 按位置更新，释放旧数据，接管新数据
+bool  UpdateList (LinkedList* list, int pos, void* new_data);
 
-// 向单链表插入元素
-void InsertList(LNode** HL, ElemType item, int mark);
+// 插入：1=头插  -1=尾插  >1=第 mark 个位置
+void  InsertList (LinkedList* list, void* data, int mark);
 
-// 从单链表中删除元素
-bool DeleteList(LNode** HL, ElemType* item, int mark);
+// 删除：0=按值(*item为键)  >0=按位置(*item接收数据指针)
+bool  DeleteList (LinkedList* list, void** item, int mark);
 
-// 对单链表进行有序输出
-void OrderOutputList(LNode* HL, int mark);
+// 有序输出：0=升序  非0=降序
+void  OrderOutputList(const LinkedList* list, int mark);
 
 #endif
